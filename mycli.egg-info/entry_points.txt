@@ -1,0 +1,4 @@
+
+        [console_scripts]
+        mycli=cli:cli
+    
