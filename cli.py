@@ -1,9 +1,14 @@
 import click
-from sqlalchemy import create_engine,inspect
+import pymongo
+import json,bson
+client = pymongo.MongoClient("mongodb://nsi319:babaji_123@sharecli-shard-00-00.csdat.gcp.mongodb.net:27017,sharecli-shard-00-01.csdat.gcp.mongodb.net:27017,sharecli-shard-00-02.csdat.gcp.mongodb.net:27017/<dbname>?ssl=true&replicaSet=atlas-nsb81p-shard-0&authSource=admin&retryWrites=true&w=majority")
 
-engine = create_engine('mysql+pymysql://root:rootpass@127.0.0.1:3306/clitool')
-print(engine.table_names())
-#connection = engine.connect()
+db = client["share_database"]
+# print(client.list_database_names())
+# print(db.list_collection_names())
+user_collection = db["user"]
+message_collection = db["message"]
+
     
 @click.group()
 @click.option('--pre',default='',help="pre loading option")
@@ -26,6 +31,27 @@ def greet(verbose,name,country):
 
 @cli.command()
 @click.option('--name',type=click.STRING,required=True)
+@click.argument('name')
 def create(name):
+    """Create User"""
     if name != '':
-        click.echo("user created!!")
+        if user_collection.find_one({"name" : name})!=None:
+            click.echo("Username already taken.. Try with a different name")
+        else:
+            insert = user_collection.insert_one({"name": name})
+            click.echo("Your _id is: {0} ".format(str(insert.inserted_id)))
+            click.echo("User creation successful")
+    else:
+        click.echo("Name attribute cannot be empty")
+
+@cli.command()
+def users():
+    """Get all Users"""
+    if user_collection.find()!=None:
+        for user in user_collection.find():
+            # check online 
+            click.echo("{0}".format(user["name"]))
+    else:
+        click.echo("No active users :(")
+
+
