@@ -11,4 +11,6 @@ source venv/bin/activate
 pip install --editable .
 
 commands available:
+create --name "name"
+users
 
